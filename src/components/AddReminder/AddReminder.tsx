@@ -37,7 +37,7 @@ const styles = (theme: Theme) =>
     },
     colorPopover: {
       zIndex: 2,
-      margin: "0 12px"
+      margin: "0 12px",
     },
   });
 
@@ -50,20 +50,29 @@ interface Props extends WithStyles<typeof styles> {
 let initReminderState = {
   title: "",
   date: new Date(),
-  color: "#e57373"
+  color: "#e57373",
 };
 
 const AddReminder = (props: Props) => {
   const [inputValue, setInputValue] = useState(initReminderState);
+  const [isError, setIsError] = useState(false);
+  const [inputHelperText, setInputHelperText] = useState("30 characters max");
   const [displayColorPicker, setDisplayColorPicker] = useState(false);
-  const [iconColor, setIconColor] = useState("#e57373")
+  const [iconColor, setIconColor] = useState("#e57373");
   const { classes, isOpen, onClose, onAdd } = props;
-  
+
+  // validation if user doesn't input a title
+  const handleInputError = (text, bool) => {
+    setIsError(bool);
+    setInputHelperText(text);
+  };
+
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = event.target;
+
     setInputValue({
       ...inputValue,
-      [id]: value.substring(0, 30),
+      [id]: value.substring(0, 30), // substring to limit to 30 characters
     });
   };
 
@@ -79,13 +88,27 @@ const AddReminder = (props: Props) => {
   };
 
   const handleColorChange = (color, event) => {
-    setIconColor(color.hex)
+    setIconColor(color.hex);
     setInputValue({
       ...inputValue,
-      color: color.hex
-    })
+      color: color.hex,
+    });
     setDisplayColorPicker(!displayColorPicker);
-  }
+  };
+
+  // on save reset values 
+  const handleSave = (inputValue) => {
+    if (inputValue.title === "") {
+      handleInputError("Title required!", true);
+    } else {
+      onAdd(inputValue);
+      setInputValue({
+        ...inputValue,
+        title: "",
+      });
+      handleInputError("30 characters max", false);
+    }
+  };
 
   return (
     <Dialog
@@ -113,6 +136,9 @@ const AddReminder = (props: Props) => {
               <TextField
                 id="title"
                 label="Add Title"
+                aria-label="add title"
+                error={isError}
+                helperText={inputHelperText}
                 value={inputValue.title}
                 onChange={handleInputChange}
               />
@@ -133,7 +159,14 @@ const AddReminder = (props: Props) => {
                 />
               </MuiPickersUtilsProvider>
             </Grid>
-            <Grid item xs={12} spacing={3} container direction="row" alignItems="center">
+            <Grid
+              item
+              xs={12}
+              spacing={3}
+              container
+              direction="row"
+              alignItems="center"
+            >
               <IconButton
                 onClick={handleColorIcon}
                 style={{ color: iconColor }}
@@ -155,6 +188,7 @@ const AddReminder = (props: Props) => {
                       "#fff176",
                       "#ffb74d",
                     ]}
+                    aria-label="choose color"
                     onChange={(color, event) => handleColorChange(color, event)}
                   />
                 </div>
@@ -164,7 +198,7 @@ const AddReminder = (props: Props) => {
               <Button
                 variant="contained"
                 color="primary"
-                onClick={() => onAdd(inputValue)}
+                onClick={() => handleSave(inputValue)}
               >
                 Save
               </Button>
