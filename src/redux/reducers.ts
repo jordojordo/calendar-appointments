@@ -53,8 +53,6 @@ function addReminderStatus(state = initialAddReminderState, action: any) {
         reminders: [...state.reminders]
       };
     case CREATE_REMINDER:
-      console.log('action: ', action.reminderObj);
-
       return {
         ...state,
         reminders: [...state.reminders, action.reminderObj],
